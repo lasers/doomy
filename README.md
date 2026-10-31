@@ -39,7 +39,7 @@ doomy &
 
 ```bash
 # red , greem, blue, yellow
-echo [red]Hello [green]World [blue]Hi [yellow]again[/]pink string > /tmp/doomy.txt
+echo [red]Hello [green]World [blue]Hi [yellow]again [/]pink string > /tmp/doomy.txt
 ```
 
 # Requirements

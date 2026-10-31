@@ -32,6 +32,7 @@ gcc -Wall -Wextra -O2 -I/usr/include/freetype2 -lX11 -lXft -lXrender -o doomy do
 #define TRANSPARENT_NONE   0U /* solid, as it always was */
 #define TRANSPARENT_ARGB   1U /* a 32 bit window with an alpha channel, a compositor (picom, xcompmgr ...) blends it */
 #define TRANSPARENT_PSEUDO 2U /* the wallpaper that is behind the bar, tinted: needs no compositor */
+#define VLA 1000
 
 static inline void drawString(const char *);
 static int hasCompositor(Display *, int);
@@ -134,7 +135,7 @@ int main(int argc, char *argv[])
   Visual *visual;
   FILE *fp = NULL;
   unsigned int showToBottom = 0U;
-  char buf[1000] = {'\0'};
+  char buf[VLA] = {'\0'};
   const char *use_font = *USE_FONT ? USE_FONT : "xft#DejaVu Sans:size=9:style=bold";
 
   argp_parse(&arg_parser, argc, argv, ARGP_IN_ORDER, NULL, NULL);
@@ -234,7 +235,7 @@ err:
   XftColorFree(display, visual, cmap, &blueColor);
   XftColorFree(display, visual, cmap, &yellowColor);
   XftFontClose(display, xftfont);
-  if(xdraw != NULL)
+  if (xdraw != NULL)
   {
     XftDrawDestroy(xdraw);
   }
@@ -352,7 +353,7 @@ static inline void drawString(const char *str)
       str += 3;
       continue;
     }
-    char segment[256];
+    char segment[VLA] = {'\0'};
     int i = 0;
     while (*str &&
                strncmp(str, "[red]", 5) &&
@@ -362,10 +363,9 @@ static inline void drawString(const char *str)
                strncmp(str, "[/]", 3))
     {
       segment[i++] = *str++;
-      if (i >= 255) break;
+      if (i == VLA - 1) break;
     }
     segment[i] = '\0';
-
     XftTextExtentsUtf8(XftDrawDisplay(xdraw), xftfont, (FcChar8 *)segment, strlen(segment), &extents);
     XftDrawStringUtf8(xdraw, current, xftfont, x, 1 + xftfont->ascent, (FcChar8 *)segment, strlen(segment));
     x += extents.xOff;
