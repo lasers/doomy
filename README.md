@@ -1,4 +1,4 @@
-[![](https://raw.githubusercontent.com/su8/hellxcb/master/1pic.png)](https://raw.githubusercontent.com/su8/hellxcb/refs/heads/master/hellxcb.png)
+![](https://raw.githubusercontent.com/su8/hellxcb/refs/heads/master/hellxcb.png)
 
 # doomy
 
