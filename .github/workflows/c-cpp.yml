@@ -13,9 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: install x11
-      run: sudo apt install libx11-dev
-    - name: install xft
-      run: sudo apt install libxft-dev
+    - name: install x11, xft and xvfb
+      run: sudo apt-get update && sudo apt-get install -y libx11-dev libxft-dev libxrender-dev libfontconfig-dev xvfb fonts-dejavu-core
     - name: make -j8
       run: make -j8
+    - name: make check
+      run: make check
