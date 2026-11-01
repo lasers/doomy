@@ -25,9 +25,11 @@ Just add the following in your `.xinitrc`, right before the `case` label to test
 ```bash
 # Top src script to output the desired data and `doomy' to read it from $XDG_RUNTIME_DIR/doomy.txt (/tmp/doomy.txt if that is not set)
 # filename outputForDoomy.sh
-script_or_variable.sh > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt" # once now, so doomy finds the file when it starts
-while true; do 
-  script_or_variable.sh > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt"
+f="${XDG_RUNTIME_DIR:-/tmp}/doomy.txt"
+script_or_variable.sh > "$f" # once now, so doomy finds the file when it starts
+while true; do
+  # mv swaps in the whole file at once, so doomy never reads it empty or half written
+  script_or_variable.sh > "$f.tmp"; mv "$f.tmp" "$f"
   sleep 1
 done &
 
