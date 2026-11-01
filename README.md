@@ -53,12 +53,11 @@ doomy &
 
 ## Usage
 
-doomy reads the first line of `$XDG_RUNTIME_DIR/doomy.txt`, a folder only you can write to.
-When that file is missing, it reads `/tmp/doomy.txt`, which older scripts write to.
+doomy reads the first line of `$XDG_RUNTIME_DIR/doomy.txt`, a folder only you can write to (`/tmp/doomy.txt` when it is not set).
 
 - An empty file gives an empty bar.
 - A line longer than 999 bytes is cut off.
-- Deleting the file (and `/tmp/doomy.txt`, if there is one) stops doomy.
+- Deleting the file stops doomy.
 
 | Option | Default | What it does |
 |---|---|---|

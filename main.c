@@ -213,8 +213,7 @@ int main(int argc, char *argv[])
 
   while (1)
   {
-    /* shortcut: /tmp/doomy.txt is still read for scripts that write there, drop it once they have moved */
-    if (!(fp = fopen(path, "r")) && !(fp = fopen("/tmp/doomy.txt", "r")))
+    if (!(fp = fopen(path, "r")))
     {
       fprintf(stderr, "doomy: couldn't find %s, exiting.\n", path);
       goto err;
