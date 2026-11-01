@@ -39,7 +39,7 @@ doomy &
 ### Colours
 
 ```bash
-# red , greem, blue, yellow
+# red , green, blue, yellow
 echo [red]Hello [green]World [blue]Hi [yellow]again [/]pink string > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt"
 ```
 
@@ -50,5 +50,7 @@ gcc/clang
 argp , on BSD it's called argp-standalone
 
 libXft
+
+fontconfig
 
 xorg libraries and headers
