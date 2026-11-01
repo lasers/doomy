@@ -140,14 +140,18 @@ int main(int argc, char *argv[])
   FILE *fp = NULL;
   unsigned int showToBottom = 0U;
   char buf[VLA] = {'\0'};
+  char path[VLA] = {'\0'};
+  const char *runtimeDir = getenv("XDG_RUNTIME_DIR");
   const char *use_font = *USE_FONT ? USE_FONT : "xft#DejaVu Sans:size=9:style=bold";
 
   argp_parse(&arg_parser, argc, argv, ARGP_IN_ORDER, NULL, NULL);
+  /* a folder only this user can write to, unlike /tmp */
+  snprintf(path, sizeof(path), "%s/doomy.txt", runtimeDir && *runtimeDir ? runtimeDir : "/tmp");
 
   display = XOpenDisplay(NULL);
   if (NULL == display)
   {
-    puts("Cannot open X display.");
+    fputs("doomy: cannot open X display.\n", stderr);
     return EXIT_FAILURE;
   }
 
@@ -180,14 +184,18 @@ int main(int argc, char *argv[])
   }
 
   win = XCreateWindow(display, RootWindow(display, screen),
-    0, TOP_BAR ? 0 : showToBottom,
+    0, TOP_BAR ? 0 : (int)showToBottom,
     (unsigned int)Screen->width, BAR_HEIGHT, 0,
     depth, (unsigned int)(TRANSPARENT_ARGB == tmode ? InputOutput : CopyFromParent), visual,
     valuemask, &wa
   );
 
-  XftColorAllocName(display, visual, cmap, *BG_COLOR ? BG_COLOR : "#282a2e", &brown);
-  XftColorAllocName(display, visual, cmap, *TEXT_COLOR ? TEXT_COLOR : "#b294bb", &pink);
+  if (!XftColorAllocName(display, visual, cmap, *BG_COLOR ? BG_COLOR : "#282a2e", &brown)
+      || !XftColorAllocName(display, visual, cmap, *TEXT_COLOR ? TEXT_COLOR : "#b294bb", &pink))
+  {
+    fputs("doomy: unknown --bgcolor or --textcolor, use a name like red or #rrggbb\n", stderr);
+    return EXIT_FAILURE;
+  }
   XftColorAllocName(display, visual, cmap, "#ff5555", &redColor);
   XftColorAllocName(display, visual, cmap, "#50fa7b", &greenColor);
   XftColorAllocName(display, visual, cmap, "#8be9fd", &blueColor);
@@ -208,9 +216,10 @@ int main(int argc, char *argv[])
 
   while (1)
   {
-    if (!(fp = fopen("/tmp/doomy.txt", "r")))
+    /* shortcut: /tmp/doomy.txt is still read for scripts that write there, drop it once they have moved */
+    if (!(fp = fopen(path, "r")) && !(fp = fopen("/tmp/doomy.txt", "r")))
     {
-      puts("Couldn't find /tmp/doomy.txt, exiting.");
+      fprintf(stderr, "doomy: couldn't find %s, exiting.\n", path);
       goto err;
     }
     /* an empty file (the script is rewriting it) keeps the old text */
@@ -220,7 +229,7 @@ int main(int argc, char *argv[])
     }
     if ((fclose(fp)) == EOF)
     {
-      puts("EOF in fclose(fp), exiting.");
+      fputs("doomy: EOF in fclose(fp), exiting.\n", stderr);
       goto err;
     }
     drawBackground(display, win, visual, (unsigned int)Screen->width, BAR_HEIGHT);
@@ -241,15 +250,12 @@ err:
   {
     XftDrawDestroy(xdraw);
   }
-  if (display != NULL)
+  XDestroyWindow(display, win);
+  if (argbColormap)
   {
-    XDestroyWindow(display, win);
-    if (argbColormap)
-    {
-      XFreeColormap(display, argbColormap);
-    }
-    XCloseDisplay(display);
+    XFreeColormap(display, argbColormap);
   }
+  XCloseDisplay(display);
   return EXIT_SUCCESS;
 }
 
@@ -324,6 +330,7 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
 {
   static XftFont *fallbacks[16] = {NULL};
   static unsigned int count = 0U;
+  static FcCharSet *misses = NULL;
   unsigned int i = 0U;
   double size = 0.0;
   FcCharSet *charset = NULL;
@@ -343,11 +350,15 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
       return fallbacks[i];
     }
   }
-  if (sizeof(fallbacks) / sizeof(*fallbacks) == count)
+  /* characters no font has: searching again every second would find nothing again */
+  if (!misses)
+  {
+    misses = FcCharSetCreate();
+  }
+  if (sizeof(fallbacks) / sizeof(*fallbacks) == count || FcCharSetHasChar(misses, ch))
   {
     return xftfont;
   }
-  /* shortcut: a character that no font has is searched for again every redraw, cache the misses if that ever shows up in profiling */
   pattern = FcPatternCreate();
   charset = FcCharSetCreate();
   FcCharSetAddChar(charset, ch);
@@ -370,6 +381,7 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
   }
   if (!font)
   {
+    FcCharSetAddChar(misses, ch);
     return xftfont;
   }
   fallbacks[count++] = font;
