@@ -27,10 +27,13 @@ all:
 install: 
 	install -D -s -m 755 $(PACKAGE) /usr/bin/$(PACKAGE)
 
+check: all
+	sh tests/smoke.sh ./$(PACKAGE)
+
 clean:
 	rm -f $(PACKAGE)
 
 uninstall:
 	rm -f /usr/bin/$(PACKAGE)
 
-.PHONY: all install clean uninstall
+.PHONY: all install check clean uninstall
