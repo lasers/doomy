@@ -330,6 +330,7 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
 {
   static XftFont *fallbacks[16] = {NULL};
   static unsigned int count = 0U;
+  static FcCharSet *misses = NULL;
   unsigned int i = 0U;
   double size = 0.0;
   FcCharSet *charset = NULL;
@@ -349,11 +350,15 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
       return fallbacks[i];
     }
   }
-  if (sizeof(fallbacks) / sizeof(*fallbacks) == count)
+  /* characters no font has: searching again every second would find nothing again */
+  if (!misses)
+  {
+    misses = FcCharSetCreate();
+  }
+  if (sizeof(fallbacks) / sizeof(*fallbacks) == count || FcCharSetHasChar(misses, ch))
   {
     return xftfont;
   }
-  /* shortcut: a character that no font has is searched for again every redraw, cache the misses if that ever shows up in profiling */
   pattern = FcPatternCreate();
   charset = FcCharSetCreate();
   FcCharSetAddChar(charset, ch);
@@ -376,6 +381,7 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
   }
   if (!font)
   {
+    FcCharSetAddChar(misses, ch);
     return xftfont;
   }
   fallbacks[count++] = font;
