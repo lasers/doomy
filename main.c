@@ -66,7 +66,7 @@ static struct argp_option options[] =
   { .name = "textcolor", .key = 't', .arg = "#b294bb", .doc = "Set text color"},
   { .name = "top", .key = 's', .arg = "1", .doc = "Show the program on top == 1, else 0 bottom position"},
   { .name = "font", .key = 'f', .arg = "xft#DejaVu Sans:size=9:style=bold", .doc = "Use custom font size and bold type"},
-  { .name = "barheight", .key = 'h', .arg = "15", .doc = "Set the height of the bar"},
+  { .name = "barheight", .key = 'h', .arg = "18", .doc = "Set the height of the bar"},
   { .name = "alpha", .key = 'a', .arg = "70", .doc = "Opacity of the background in percent, 100 is solid (the default), 0 is invisible. The text stays solid"},
   { .name = "tmode", .key = 'm', .arg = "auto", .doc = "How to be transparent: argb (needs a compositor like picom or xcompmgr), pseudo (shows the wallpaper through the bar, no compositor needed), auto picks argb when a compositor runs, else pseudo"},
   { .doc = NULL }
@@ -89,7 +89,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       BAR_HEIGHT = (unsigned int)strtoul(arg, (char **)NULL, 10);
       if (!BAR_HEIGHT)
       {
-        BAR_HEIGHT = 15U;
+        BAR_HEIGHT = 18U;
       }
       break;
     case 's':
