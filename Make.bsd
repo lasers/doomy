@@ -18,9 +18,6 @@ CFLAGS+=`pkg-config --libs --cflags x11 xft` -D_DEFAULT_SOURCE -lXrender -I/usr/
 PACKAGE=doomy
 PROG=main.c
 
-# used by doomy in the past, since then argp is used
-# -DUSE_FONT=\"'$(USE_FONT)'\" -DTEXT_COLOR=\"'$(TEXT_COLOR)'\" -DBG_COLOR=\"'$(BG_COLOR)'\" -DBAR_HEIGHT=\"'$(BAR_HEIGHT)'\" 
-
 all:
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PACKAGE) $(PROG)
 
