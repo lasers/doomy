@@ -190,8 +190,12 @@ int main(int argc, char *argv[])
     valuemask, &wa
   );
 
-  XftColorAllocName(display, visual, cmap, *BG_COLOR ? BG_COLOR : "#282a2e", &brown);
-  XftColorAllocName(display, visual, cmap, *TEXT_COLOR ? TEXT_COLOR : "#b294bb", &pink);
+  if (!XftColorAllocName(display, visual, cmap, *BG_COLOR ? BG_COLOR : "#282a2e", &brown)
+      || !XftColorAllocName(display, visual, cmap, *TEXT_COLOR ? TEXT_COLOR : "#b294bb", &pink))
+  {
+    fputs("doomy: unknown --bgcolor or --textcolor, use a name like red or #rrggbb\n", stderr);
+    return EXIT_FAILURE;
+  }
   XftColorAllocName(display, visual, cmap, "#ff5555", &redColor);
   XftColorAllocName(display, visual, cmap, "#50fa7b", &greenColor);
   XftColorAllocName(display, visual, cmap, "#8be9fd", &blueColor);
