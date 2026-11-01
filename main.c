@@ -90,6 +90,10 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
       break;
     case 'h':
       BAR_HEIGHT = (unsigned int)strtoul(arg, (char **)NULL, 10);
+      if (!BAR_HEIGHT)
+      {
+        BAR_HEIGHT = 15U;
+      }
       break;
     case 's':
       TOP_BAR = (unsigned int)strtoul(arg, (char **)NULL, 10);
@@ -156,8 +160,7 @@ int main(int argc, char *argv[])
   tmode = pickTransparency(display, screen, &vinfo);
 
   wa.override_redirect = 1;
-  wa.event_mask = ExposureMask|KeyPressMask;
-  valuemask = CWOverrideRedirect | CWEventMask;
+  valuemask = CWOverrideRedirect;
   if (TRANSPARENT_ARGB == tmode)
   {
     /* a window with an alpha channel needs its own visual and colormap, and no parent relative background */
@@ -178,14 +181,10 @@ int main(int argc, char *argv[])
 
   win = XCreateWindow(display, RootWindow(display, screen),
     0, TOP_BAR ? 0 : showToBottom,
-    (unsigned int)Screen->width, BAR_HEIGHT ? BAR_HEIGHT : 15U, 0,
+    (unsigned int)Screen->width, BAR_HEIGHT, 0,
     depth, (unsigned int)(TRANSPARENT_ARGB == tmode ? InputOutput : CopyFromParent), visual,
     valuemask, &wa
   );
-
-  XSelectInput(display, win, StructureNotifyMask);
-  Atom wm_delete_window = XInternAtom(display, "WM_DELETE_WINDOW", 0);
-  XSetWMProtocols(display, win, &wm_delete_window, 1);
 
   XftColorAllocName(display, visual, cmap, *BG_COLOR ? BG_COLOR : "#282a2e", &brown);
   XftColorAllocName(display, visual, cmap, *TEXT_COLOR ? TEXT_COLOR : "#b294bb", &pink);
@@ -205,6 +204,7 @@ int main(int argc, char *argv[])
 
   XMapWindow(display, win);
   XFlush(display);
+  xdraw = XftDrawCreate(display, win, visual, cmap);
 
   while (1)
   {
@@ -213,18 +213,20 @@ int main(int argc, char *argv[])
       puts("Couldn't find /tmp/doomy.txt, exiting.");
       goto err;
     }
-    fscanf(fp, "%[^\n]\n", buf);
+    /* an empty file (the script is rewriting it) keeps the old text */
+    if (fgets(buf, sizeof(buf), fp))
+    {
+      buf[strcspn(buf, "\n")] = '\0';
+    }
     if ((fclose(fp)) == EOF)
     {
       puts("EOF in fclose(fp), exiting.");
       goto err;
     }
-    xdraw = XftDrawCreate(display, win, visual, cmap);
-    drawBackground(display, win, visual, (unsigned int)Screen->width, BAR_HEIGHT ? BAR_HEIGHT : 15U);
+    drawBackground(display, win, visual, (unsigned int)Screen->width, BAR_HEIGHT);
     drawString(buf);
     XFlush(display);
     sleep(1);
-    XftDrawDestroy(xdraw);
   }
 
 err:
