@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
   }
 
   win = XCreateWindow(display, RootWindow(display, screen),
-    0, TOP_BAR ? 0 : showToBottom,
+    0, TOP_BAR ? 0 : (int)showToBottom,
     (unsigned int)Screen->width, BAR_HEIGHT, 0,
     depth, (unsigned int)(TRANSPARENT_ARGB == tmode ? InputOutput : CopyFromParent), visual,
     valuemask, &wa
