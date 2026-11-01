@@ -25,6 +25,7 @@ Just add the following in your `.xinitrc`, right before the `case` label to test
 ```bash
 # Top src script to output the desired data and `doomy' to read it from /tmp/doomy.txt
 # filename outputForDoomy.sh
+script_or_variable.sh > /tmp/doomy.txt # once now, so doomy finds the file when it starts
 while true; do 
   script_or_variable.sh > /tmp/doomy.txt
   sleep 1

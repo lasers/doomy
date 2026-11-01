@@ -1,3 +1,4 @@
+script_or_variable.sh > /tmp/doomy.txt # once now, so doomy finds the file when it starts
 while true; do 
   script_or_variable.sh > /tmp/doomy.txt
   sleep 1
