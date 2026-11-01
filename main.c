@@ -317,6 +317,63 @@ static void drawBackground(Display *display, Window win, Visual *visual, unsigne
   XRenderFreePicture(display, picture);
 }
 
+/* The font that has a glyph for ch: the main one, else one that fontconfig finds (emojis, CJK ...), kept for the next time */
+static XftFont *fontFor(Display *display, FcChar32 ch)
+{
+  static XftFont *fallbacks[16] = {NULL};
+  static unsigned int count = 0U;
+  unsigned int i = 0U;
+  double size = 0.0;
+  FcCharSet *charset = NULL;
+  FcPattern *pattern = NULL;
+  FcPattern *match = NULL;
+  FcResult result;
+  XftFont *font = NULL;
+
+  if (XftCharExists(display, xftfont, ch))
+  {
+    return xftfont;
+  }
+  for (i = 0U; i < count; i++)
+  {
+    if (XftCharExists(display, fallbacks[i], ch))
+    {
+      return fallbacks[i];
+    }
+  }
+  if (sizeof(fallbacks) / sizeof(*fallbacks) == count)
+  {
+    return xftfont;
+  }
+  /* shortcut: a character that no font has is searched for again every redraw, cache the misses if that ever shows up in profiling */
+  pattern = FcPatternCreate();
+  charset = FcCharSetCreate();
+  FcCharSetAddChar(charset, ch);
+  FcPatternAddCharSet(pattern, FC_CHARSET, charset);
+  if (FcPatternGetDouble(xftfont->pattern, FC_PIXEL_SIZE, 0, &size) == FcResultMatch)
+  {
+    FcPatternAddDouble(pattern, FC_PIXEL_SIZE, size);
+  }
+  match = XftFontMatch(display, DefaultScreen(display), pattern, &result);
+  FcCharSetDestroy(charset);
+  FcPatternDestroy(pattern);
+  if (match && !(font = XftFontOpenPattern(display, match)))
+  {
+    FcPatternDestroy(match);
+  }
+  if (font && !XftCharExists(display, font, ch))
+  {
+    XftFontClose(display, font);
+    font = NULL;
+  }
+  if (!font)
+  {
+    return xftfont;
+  }
+  fallbacks[count++] = font;
+  return font;
+}
+
 static inline void drawString(const char *str)
 {
   int x = 0;
@@ -366,8 +423,38 @@ static inline void drawString(const char *str)
       if (i == VLA - 1) break;
     }
     segment[i] = '\0';
-    XftTextExtentsUtf8(XftDrawDisplay(xdraw), xftfont, (FcChar8 *)segment, strlen(segment), &extents);
-    XftDrawStringUtf8(xdraw, current, xftfont, x, 1 + xftfont->ascent, (FcChar8 *)segment, strlen(segment));
-    x += extents.xOff;
+    /* split the segment in runs of characters that use the same font, so emojis are drawn with an emoji font */
+    const char *run = segment;
+    const char *p = segment;
+    XftFont *runFont = NULL;
+    while (*p)
+    {
+      FcChar32 ch = 0;
+      XftFont *font = xftfont;
+      int n = FcUtf8ToUcs4((const FcChar8 *)p, &ch, (int)strlen(p));
+      if (n <= 0)
+      {
+        n = 1; /* not valid UTF-8, leave the byte to the main font */
+      }
+      else
+      {
+        font = fontFor(XftDrawDisplay(xdraw), ch);
+      }
+      if (runFont && font != runFont)
+      {
+        XftTextExtentsUtf8(XftDrawDisplay(xdraw), runFont, (const FcChar8 *)run, (int)(p - run), &extents);
+        XftDrawStringUtf8(xdraw, current, runFont, x, 1 + xftfont->ascent, (const FcChar8 *)run, (int)(p - run));
+        x += extents.xOff;
+        run = p;
+      }
+      runFont = font;
+      p += n;
+    }
+    if (runFont)
+    {
+      XftTextExtentsUtf8(XftDrawDisplay(xdraw), runFont, (const FcChar8 *)run, (int)(p - run), &extents);
+      XftDrawStringUtf8(xdraw, current, runFont, x, 1 + xftfont->ascent, (const FcChar8 *)run, (int)(p - run));
+      x += extents.xOff;
+    }
   }
 }
