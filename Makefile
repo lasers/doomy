@@ -14,15 +14,15 @@
 #   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #   MA 02110-1301, USA.
 
-CFLAGS+=-g2 -Wall -Wextra -O2 -I/usr/include/freetype2 -I/usr/X11R6/include -L/usr/X11R6/lib -I/usr/include/X11 -lX11 -lXft -lXrender -lfontconfig -std=c99 -pipe -pedantic -Wundef -Wshadow -W -Wwrite-strings -Wcast-align -Wstrict-overflow=5 -Wconversion -Wpointer-arith -Wstrict-prototypes -Wformat=2 -Wsign-compare -Wendif-labels -Wredundant-decls -Winit-self
+CPPFLAGS+=-I/usr/include/freetype2 -I/usr/X11R6/include -I/usr/include/X11
+LDFLAGS+=-L/usr/X11R6/lib
+LDLIBS+=-lX11 -lXft -lXrender -lfontconfig
+CFLAGS+=-g2 -Wall -Wextra -O2 -std=c99 -pipe -pedantic -Wundef -Wshadow -W -Wwrite-strings -Wcast-align -Wstrict-overflow=5 -Wconversion -Wpointer-arith -Wstrict-prototypes -Wformat=2 -Wsign-compare -Wendif-labels -Wredundant-decls -Winit-self
 PACKAGE=doomy
 PROG=main.c
 
-# used by doomy in the past, since then argp is used
-# -DUSE_FONT=\"'$(USE_FONT)'\" -DTEXT_COLOR=\"'$(TEXT_COLOR)'\" -DBG_COLOR=\"'$(BG_COLOR)'\" -DBAR_HEIGHT=\"'$(BAR_HEIGHT)'\" 
-
 all:
-	$(CC) -o $(PACKAGE) $(PROG) $(CFLAGS) $(LDFLAGS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $(PACKAGE) $(PROG) $(LDFLAGS) $(LDLIBS)
 
 install: 
 	install -D -s -m 755 $(PACKAGE) /usr/bin/$(PACKAGE)

@@ -63,7 +63,7 @@ doomy reads the first line of `$XDG_RUNTIME_DIR/doomy.txt`, a folder only you ca
 |---|---|---|
 | `-b`, `--bgcolor` | `#282a2e` | background colour |
 | `-t`, `--textcolor` | `#b294bb` | text colour |
-| `-f`, `--font` | `xft#DejaVu Sans:size=9:style=bold` | font, e.g. `"Hack:size=10"` |
+| `-f`, `--font` | `DejaVu Sans:size=9:style=bold` | font, e.g. `"Hack:size=10"` |
 | `-h`, `--barheight` | `18` | height of the bar in pixels |
 | `-s`, `--top` | `1` | `1` at the top of the screen, `0` at the bottom |
 | `-a`, `--alpha` | `100` | opacity of the background in percent; the text stays solid |
