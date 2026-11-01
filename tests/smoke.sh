@@ -21,12 +21,8 @@ awk 'BEGIN { while (i++ < 5000) printf "x"; print "" }' > "$F";      alive "a li
 : > "$F";                                                               alive "an empty file"
 
 # deleting the file is how doomy is stopped: it used to free its drawing twice and crash
-if [ -e /tmp/doomy.txt ]; then
-    echo "skip deleting doomy.txt exits cleanly (doomy falls back to the /tmp/doomy.txt that is here)"
-else
-    echo text > "$F"; timeout 5 "$BIN" 2>/dev/null & P=$!; sleep 1.5; rm "$F"; wait $P
-    expect "deleting doomy.txt exits cleanly" $? 0
-fi
+echo text > "$F"; timeout 5 "$BIN" 2>/dev/null & P=$!; sleep 1.5; rm "$F"; wait $P
+expect "deleting doomy.txt exits cleanly" $? 0
 
 echo text > "$F"; timeout 2 "$BIN" -b nosuchcolour 2>/dev/null
 expect "an unknown --bgcolor exits with an error" $? 1
