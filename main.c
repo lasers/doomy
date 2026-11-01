@@ -222,11 +222,11 @@ int main(int argc, char *argv[])
       fprintf(stderr, "doomy: couldn't find %s, exiting.\n", path);
       goto err;
     }
-    /* an empty file (the script is rewriting it) keeps the old text */
-    if (fgets(buf, sizeof(buf), fp))
+    if (!fgets(buf, sizeof(buf), fp))
     {
-      buf[strcspn(buf, "\n")] = '\0';
+      buf[0] = '\0'; /* the script printed nothing: show that, not the last line */
     }
+    buf[strcspn(buf, "\n")] = '\0';
     if ((fclose(fp)) == EOF)
     {
       fputs("doomy: EOF in fclose(fp), exiting.\n", stderr);
