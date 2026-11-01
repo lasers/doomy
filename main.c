@@ -250,15 +250,12 @@ err:
   {
     XftDrawDestroy(xdraw);
   }
-  if (display != NULL)
+  XDestroyWindow(display, win);
+  if (argbColormap)
   {
-    XDestroyWindow(display, win);
-    if (argbColormap)
-    {
-      XFreeColormap(display, argbColormap);
-    }
-    XCloseDisplay(display);
+    XFreeColormap(display, argbColormap);
   }
+  XCloseDisplay(display);
   return EXIT_SUCCESS;
 }
 
