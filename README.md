@@ -23,11 +23,11 @@ The program in use in the above picture is from my other project https://github.
 Just add the following in your `.xinitrc`, right before the `case` label to test different WM's
 
 ```bash
-# Top src script to output the desired data and `doomy' to read it from /tmp/doomy.txt
+# Top src script to output the desired data and `doomy' to read it from $XDG_RUNTIME_DIR/doomy.txt (/tmp/doomy.txt if that is not set)
 # filename outputForDoomy.sh
-script_or_variable.sh > /tmp/doomy.txt # once now, so doomy finds the file when it starts
+script_or_variable.sh > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt" # once now, so doomy finds the file when it starts
 while true; do 
-  script_or_variable.sh > /tmp/doomy.txt
+  script_or_variable.sh > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt"
   sleep 1
 done &
 
@@ -40,7 +40,7 @@ doomy &
 
 ```bash
 # red , greem, blue, yellow
-echo [red]Hello [green]World [blue]Hi [yellow]again [/]pink string > /tmp/doomy.txt
+echo [red]Hello [green]World [blue]Hi [yellow]again [/]pink string > "${XDG_RUNTIME_DIR:-/tmp}/doomy.txt"
 ```
 
 # Requirements

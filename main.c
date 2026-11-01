@@ -140,9 +140,13 @@ int main(int argc, char *argv[])
   FILE *fp = NULL;
   unsigned int showToBottom = 0U;
   char buf[VLA] = {'\0'};
+  char path[VLA] = {'\0'};
+  const char *runtimeDir = getenv("XDG_RUNTIME_DIR");
   const char *use_font = *USE_FONT ? USE_FONT : "xft#DejaVu Sans:size=9:style=bold";
 
   argp_parse(&arg_parser, argc, argv, ARGP_IN_ORDER, NULL, NULL);
+  /* a folder only this user can write to, unlike /tmp */
+  snprintf(path, sizeof(path), "%s/doomy.txt", runtimeDir && *runtimeDir ? runtimeDir : "/tmp");
 
   display = XOpenDisplay(NULL);
   if (NULL == display)
@@ -208,9 +212,10 @@ int main(int argc, char *argv[])
 
   while (1)
   {
-    if (!(fp = fopen("/tmp/doomy.txt", "r")))
+    /* shortcut: /tmp/doomy.txt is still read for scripts that write there, drop it once they have moved */
+    if (!(fp = fopen(path, "r")) && !(fp = fopen("/tmp/doomy.txt", "r")))
     {
-      puts("Couldn't find /tmp/doomy.txt, exiting.");
+      printf("Couldn't find %s, exiting.\n", path);
       goto err;
     }
     /* an empty file (the script is rewriting it) keeps the old text */
