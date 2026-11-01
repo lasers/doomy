@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
   display = XOpenDisplay(NULL);
   if (NULL == display)
   {
-    puts("Cannot open X display.");
+    fputs("doomy: cannot open X display.\n", stderr);
     return EXIT_FAILURE;
   }
 
@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
     /* shortcut: /tmp/doomy.txt is still read for scripts that write there, drop it once they have moved */
     if (!(fp = fopen(path, "r")) && !(fp = fopen("/tmp/doomy.txt", "r")))
     {
-      printf("Couldn't find %s, exiting.\n", path);
+      fprintf(stderr, "doomy: couldn't find %s, exiting.\n", path);
       goto err;
     }
     /* an empty file (the script is rewriting it) keeps the old text */
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
     }
     if ((fclose(fp)) == EOF)
     {
-      puts("EOF in fclose(fp), exiting.");
+      fputs("doomy: EOF in fclose(fp), exiting.\n", stderr);
       goto err;
     }
     drawBackground(display, win, visual, (unsigned int)Screen->width, BAR_HEIGHT);
