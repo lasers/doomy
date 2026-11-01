@@ -383,50 +383,51 @@ static XftFont *fontFor(Display *display, FcChar32 ch)
   return font;
 }
 
+static const struct
+{
+  const char *tag;
+  XftColor *color;
+} tags[] = {
+  {"[red]", &redColor},
+  {"[green]", &greenColor},
+  {"[blue]", &blueColor},
+  {"[yellow]", &yellowColor},
+  {"[/]", &pink}
+};
+
+/* The length of the colour tag that str starts with, 0 when there is none. color gets its colour */
+static size_t tagAt(const char *str, XftColor **color)
+{
+  size_t i = 0U;
+  size_t n = 0U;
+  for (i = 0U; i < sizeof(tags) / sizeof(*tags); i++)
+  {
+    n = strlen(tags[i].tag);
+    if (!strncmp(str, tags[i].tag, n))
+    {
+      *color = tags[i].color;
+      return n;
+    }
+  }
+  return 0U;
+}
+
 static inline void drawString(const char *str)
 {
   int x = 0;
+  size_t len = 0U;
   XftColor *current = &pink;
+  XftColor *next = NULL;
   XGlyphInfo extents;
   while (*str) {
-    if (!strncmp(str, "[red]", 5))
+    if ((len = tagAt(str, &current)))
     {
-      current = &redColor;
-      str += 5;
-      continue;
-    }
-    if (!strncmp(str, "[green]", 7))
-    {
-      current = &greenColor;
-      str += 7;
-      continue;
-    }
-    if (!strncmp(str, "[blue]", 6))
-    {
-      current = &blueColor;
-      str += 6;
-      continue;
-    }
-    if (!strncmp(str, "[yellow]", 8))
-    {
-      current = &yellowColor;
-      str += 8;
-      continue;
-    }
-    if (!strncmp(str, "[/]", 3))
-    {
-      current = &pink;
-      str += 3;
+      str += len;
       continue;
     }
     char segment[VLA] = {'\0'};
     int i = 0;
-    while (*str &&
-               strncmp(str, "[red]", 5) &&
-               strncmp(str, "[green]", 7) &&
-               strncmp(str, "[blue]", 6) &&
-               strncmp(str, "[yellow]", 8) &&
-               strncmp(str, "[/]", 3))
+    while (*str && !tagAt(str, &next))
     {
       segment[i++] = *str++;
       if (i == VLA - 1) break;
