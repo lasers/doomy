@@ -47,7 +47,7 @@ static XftFont *xftfont;
 static XftDraw *xdraw = NULL;
 static const char *BG_COLOR = "";
 static const char *TEXT_COLOR = "";
-static const char *USE_FONT = "";
+static const char *USE_FONT = "DejaVu Sans:size=9:style=bold";
 static const char *TMODE = "";
 static unsigned int BAR_HEIGHT = 18U;
 static unsigned int TOP_BAR = 1U;
@@ -65,7 +65,7 @@ static struct argp_option options[] =
   { .name = "bgcolor", .key = 'b', .arg = "#282a2e", .doc = "Set background color"},
   { .name = "textcolor", .key = 't', .arg = "#b294bb", .doc = "Set text color"},
   { .name = "top", .key = 's', .arg = "1", .doc = "Show the program on top == 1, else 0 bottom position"},
-  { .name = "font", .key = 'f', .arg = "xft#DejaVu Sans:size=9:style=bold", .doc = "Use custom font size and bold type"},
+  { .name = "font", .key = 'f', .arg = "DejaVu Sans:size=9:style=bold", .doc = "Use custom font size and bold type"},
   { .name = "barheight", .key = 'h', .arg = "18", .doc = "Set the height of the bar"},
   { .name = "alpha", .key = 'a', .arg = "70", .doc = "Opacity of the background in percent, 100 is solid (the default), 0 is invisible. The text stays solid"},
   { .name = "tmode", .key = 'm', .arg = "auto", .doc = "How to be transparent: argb (needs a compositor like picom or xcompmgr), pseudo (shows the wallpaper through the bar, no compositor needed), auto picks argb when a compositor runs, else pseudo"},
@@ -139,7 +139,6 @@ int main(int argc, char *argv[])
   char buf[VLA] = {'\0'};
   char path[VLA] = {'\0'};
   const char *runtimeDir = getenv("XDG_RUNTIME_DIR");
-  const char *use_font = *USE_FONT ? USE_FONT : "xft#DejaVu Sans:size=9:style=bold";
 
   argp_parse(&arg_parser, argc, argv, ARGP_IN_ORDER, NULL, NULL);
   /* a folder only this user can write to, unlike /tmp */
@@ -197,10 +196,10 @@ int main(int argc, char *argv[])
   XftColorAllocName(display, visual, cmap, "#50fa7b", &greenColor);
   XftColorAllocName(display, visual, cmap, "#8be9fd", &blueColor);
   XftColorAllocName(display, visual, cmap, "#f1fa8c", &yellowColor);
-  xftfont = XftFontOpenXlfd(display, screen, use_font);
+  xftfont = XftFontOpenXlfd(display, screen, USE_FONT);
   if (!xftfont)
   {
-    xftfont = XftFontOpenName(display, screen, use_font);
+    xftfont = XftFontOpenName(display, screen, USE_FONT);
     if (!xftfont)
     {
       return EXIT_FAILURE;
