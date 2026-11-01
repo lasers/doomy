@@ -8,7 +8,11 @@ export XDG_RUNTIME_DIR=$(mktemp -d) # a doomy.txt of our own
 F=$XDG_RUNTIME_DIR/doomy.txt
 Xvfb "$DISPLAY" -screen 0 800x600x24 >/dev/null 2>&1 & XPID=$!
 trap 'kill $XPID 2>/dev/null; rm -rf "$XDG_RUNTIME_DIR"' EXIT
-sleep 1
+# wait for Xvfb's socket, up to 5 seconds: a fixed sleep fails on a slow machine
+i=0; until [ -e "/tmp/.X11-unix/X${DISPLAY#:}" ]; do
+  i=$((i + 1)); [ $i -gt 50 ] && { echo "FAIL Xvfb did not start on $DISPLAY"; exit 1; }
+  sleep 0.1
+done
 fail=0
 
 # expect NAME GOT WANT: pass if the two values are equal
